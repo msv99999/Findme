@@ -17,7 +17,7 @@ import android.widget.Spinner;
 public class Main3Activity extends AppCompatActivity {
 
     String[] faculty_position={"Professor","Associate Professor","Assistant Professor","Clerk"};
-    String[] departments={"CSE","IT","ECE","MECH","EEE","BME","CIVIL","CHEMICAL"};
+    String[] departments={"CSE","IT","ECE","MECH","EEE","BME","CIVIL","CHEM"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

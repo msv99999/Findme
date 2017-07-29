@@ -15,7 +15,7 @@ import android.widget.Spinner;
 public class Main2Activity extends AppCompatActivity {
 
 
-    String[] departments={"CSE","IT","ECE","MECH","EEE","BME","CIVIL","CHEMICAL"};
+    String[] departments={"CSE","IT","ECE","MECH","EEE","BME","CIVIL","CHEM"};
     String[] year={"1","2","3","4"};
     String[] section={"A","B"
     };
@@ -44,10 +44,6 @@ public class Main2Activity extends AppCompatActivity {
         Spinner sp2 = (Spinner) findViewById(R.id.year);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp2.setAdapter(adapter2);
-
-        Spinner sp3 = (Spinner) findViewById(R.id.section);
-        adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sp3.setAdapter(adapter3);
 
 
 

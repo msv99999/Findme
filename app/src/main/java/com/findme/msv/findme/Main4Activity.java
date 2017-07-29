@@ -15,7 +15,7 @@ public class Main4Activity extends AppCompatActivity {
         handler1.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent m = new Intent(Main4Activity.this, MainActivity.class);
+                Intent m = new Intent(Main4Activity.this, LoginActivity.class);
                 startActivity(m);
                 Main4Activity.this.overridePendingTransition(R.anim.fadein, R.anim.fadeout);
             }

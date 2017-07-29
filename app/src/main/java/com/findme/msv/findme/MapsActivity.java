@@ -1,5 +1,6 @@
 package com.findme.msv.findme;
 
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -58,26 +61,17 @@ import android.widget.Toast;
 
 
 
-
-
-
-
-
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private static final int HANDLER_DELAY = 1000*5;
 
-
-
-
-
-    Button btnShowLocation;
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
 
     // GPSTracker class
     GPSTracker gps;
-
+    private Timer timer;
     double latitude;
     double longitude;
 
@@ -120,18 +114,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-
-        /*
-        btnShowLocation = (Button) findViewById(R.id.button);
-
-        // show location button click event
-        btnShowLocation.setOnClickListener(new View.OnClickListener() {
-
+        timer  = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
-            public void onClick(View arg0) {
-                // create class object
-                gps = new GPSTracker(MapsActivity.this);
-
+            public void run() {
                 // check if GPS enabled
                 if (gps.canGetLocation()) {
 
@@ -149,26 +135,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
             }
-        });
-        */
+        }, 0, HANDLER_DELAY);
 
-        gps = new GPSTracker(MapsActivity.this);
 
-        // check if GPS enabled
-        if (gps.canGetLocation()) {
 
-            latitude = gps.getLatitude();
-            longitude = gps.getLongitude();
 
-            // \n is for new line
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-        } else {
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
-        }
+
+
+
 
 
 
