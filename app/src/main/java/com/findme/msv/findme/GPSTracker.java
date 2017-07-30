@@ -16,9 +16,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 public class GPSTracker extends Service implements LocationListener {
 
@@ -38,18 +40,109 @@ public class GPSTracker extends Service implements LocationListener {
     double longitude; // longitude
 
     // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 10 meters
 
     // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 5; // 1 minute
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
 
+
+    boolean serviceStopped;
+
+    private Handler mHandler;
+    private Runnable updateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Run", "Run");
+
+            if (serviceStopped == false)
+            {
+                //createNotificationIcon();
+                getLocation();
+                if (canGetLocation())
+                {
+
+                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                            + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+
+
+                }
+                else {
+
+
+
+                    //Toast.makeText(getBaseContext(),"GPS NA",Toast.LENGTH_SHORT).show();
+                    // can't get location
+                    // GPS or Network is not enabled
+                    // Ask user to enable GPS/network in settings
+                    Log.d("NOGPS", "NOGPS");
+                    showSettingsAlert();
+
+                }
+            }
+            queueRunnable();
+        }
+    };
+
+    private void queueRunnable() {
+        mHandler.postDelayed(updateRunnable, 10*1000);
+
+    }
+
     public GPSTracker(Context context) {
         this.mContext = context;
-        getLocation();
+        Log.d("constructor2","constructor2");
     }
+
+    public GPSTracker()
+    {
+        mContext=this;
+        Log.d("constructor","constructor");
+    }
+
+
+
+
+    @Override
+    public void onCreate() {
+        //Toast.makeText(getBaseContext(), "check", Toast.LENGTH_SHORT).show();
+
+        super.onCreate();
+        //Toast.makeText(getBaseContext(), "oncreate()", Toast.LENGTH_SHORT).show();
+        serviceStopped = false;
+        mHandler = new Handler();
+        Log.d("Oncreate", "Oncreate");
+        /*
+        getLocation();
+        while(canGetLocation!=true)
+        {
+            showSettingsAlert();
+            getLocation();
+        }
+        */
+
+        queueRunnable();
+
+    }
+
+    @Override
+    public int onStartCommand(Intent intent,int flags,int startId) {
+        //Toast.makeText(getBaseContext(), "onstart()", Toast.LENGTH_SHORT).show();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        serviceStopped=true;
+        super.onDestroy();
+        Toast.makeText(getBaseContext(),"ondestroy()",Toast.LENGTH_SHORT).show();
+    }
+
+
+
 
     public Location getLocation() {
         try {
@@ -117,7 +210,7 @@ public class GPSTracker extends Service implements LocationListener {
     /**
      * Stop using GPS listener
      * Calling this function will stop using GPS in your app
-     * */
+     */
 
     /*
     public void stopUsingGPS(){
@@ -129,9 +222,8 @@ public class GPSTracker extends Service implements LocationListener {
     /**
      * Function to get latitude
      * */
-
-    public double getLatitude(){
-        if(location != null){
+    public double getLatitude() {
+        if (location != null) {
             latitude = location.getLatitude();
         }
 
@@ -141,10 +233,10 @@ public class GPSTracker extends Service implements LocationListener {
 
     /**
      * Function to get longitude
-     * */
+     */
 
-    public double getLongitude(){
-        if(location != null){
+    public double getLongitude() {
+        if (location != null) {
             longitude = location.getLongitude();
         }
 
@@ -154,8 +246,9 @@ public class GPSTracker extends Service implements LocationListener {
 
     /**
      * Function to check GPS/wifi enabled
+     *
      * @return boolean
-     * */
+     */
 
     public boolean canGetLocation() {
         return this.canGetLocation;
@@ -164,35 +257,40 @@ public class GPSTracker extends Service implements LocationListener {
     /**
      * Function to show settings alert dialog
      * On pressing Settings button will lauch Settings Options
-     * */
+     */
 
-    public void showSettingsAlert(){
+    public void showSettingsAlert() {
+        Log.d("SETTINGS1", "SETTINGS1");
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
-
+        Log.d("SETTINGS2", "SETTINGS2");
         // Setting Dialog Title
-        alertDialog.setTitle("GPS is settings");
-
+        alertDialog.setTitle("GPS in settings");
+        Log.d("SETTINGS3", "SETTINGS3");
         // Setting Dialog Message
         alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
-
+        Log.d("SETTINGS4", "SETTINGS4");
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 mContext.startActivity(intent);
             }
         });
-
+        Log.d("SETTINGS5", "SETTINGS5");
         // on pressing cancel button
         alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }
         });
-
+        Log.d("SETTINGS6", "SETTINGS6");
         // Showing Alert Message
         alertDialog.show();
+        Log.d("SETTINGS7", "SETTINGS7");
     }
+
+
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -212,6 +310,6 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public IBinder onBind(Intent arg0) {
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

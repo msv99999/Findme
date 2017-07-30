@@ -114,10 +114,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-        timer  = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+
+
                 // check if GPS enabled
                 if (gps.canGetLocation()) {
 
@@ -133,10 +131,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Ask user to enable GPS/network in settings
                     gps.showSettingsAlert();
                 }
-
-            }
-        }, 0, HANDLER_DELAY);
-
 
 
 

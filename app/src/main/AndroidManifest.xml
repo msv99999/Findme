@@ -50,6 +50,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".LoginActivity"></activity>
+
+        <service android:name=".GPSTracker"/>
     </application>
 
 </manifest>

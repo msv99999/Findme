@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.test.mock.MockPackageManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = android.Manifest.permission.ACCESS_FINE_LOCATION;
-    GPSTracker gps;
+    //GPSTracker gps;
 
     double latitude;
     double longitude;
@@ -68,10 +69,14 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
 
-        try {
-            if (ActivityCompat.checkSelfPermission(this, mPermission)
-                    != MockPackageManager.PERMISSION_GRANTED) {
 
+
+
+        try {
+            Log.d("perm.","perm.");
+            if (ActivityCompat.checkSelfPermission(this, mPermission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.d("perm.2","perm.2");
                 ActivityCompat.requestPermissions(this, new String[]{mPermission},
                         REQUEST_CODE_PERMISSION);
 
@@ -82,7 +87,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        Intent i=new Intent(this,GPSTracker.class);
+        startService(i);
 
+
+/*
         gps = new GPSTracker(MainActivity.this);
 
         // check if GPS enabled
@@ -91,18 +100,20 @@ public class MainActivity extends AppCompatActivity {
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
 
+
+
+
             // \n is for new line
-            } else {
+            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+        } else {
             // can't get location
             // GPS or Network is not enabled
             // Ask user to enable GPS/network in settings
             gps.showSettingsAlert();
         }
-        Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
 
-
-
+*/
 
     }
 

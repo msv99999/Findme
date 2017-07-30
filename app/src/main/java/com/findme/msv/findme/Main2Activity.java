@@ -45,6 +45,9 @@ public class Main2Activity extends AppCompatActivity {
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp2.setAdapter(adapter2);
 
+        Intent i=new Intent(this, GPSTracker.class);
+        stopService(i);
+
 
 
     }
