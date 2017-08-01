@@ -18,9 +18,19 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.provider.Settings;
+import android.support.annotation.UiThread;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class GPSTracker extends Service implements LocationListener {
 
@@ -51,6 +61,18 @@ public class GPSTracker extends Service implements LocationListener {
 
     boolean serviceStopped;
 
+
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference ref1;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    String mail;
+    String dept,yearmap;
+    Map<String, String> map;
+
+
+
+
     private Handler mHandler;
     private Runnable updateRunnable = new Runnable() {
         @Override
@@ -67,7 +89,41 @@ public class GPSTracker extends Service implements LocationListener {
                     Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
                             + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
 
+                    //Toast.makeText(getBaseContext(),mail,Toast.LENGTH_SHORT).show();
 
+                    /*
+                    Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                    hopperUpdates.put(mail,latitude);
+                    DatabaseReference ref2=ref1.child(mail);
+                    */
+                    //ref2.push().setValue(hopperUpdates);
+
+                    if(mail.substring(mail.lastIndexOf('@')).matches("@ssn.edu.in"))
+                    {
+                        //Faculty
+                        mail=mail.replace(".","_");
+                        DatabaseReference ref2=ref1.child("faculty");
+
+                    }
+                    else
+                    {
+                        //Student
+                        mail=mail.replace(".","_");
+                        DatabaseReference ref2=ref1.child("student");
+                        DatabaseReference ref3=ref2.child(dept.toUpperCase());
+
+                        String year=map.get(yearmap);
+                        //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
+                        DatabaseReference ref4=ref3.child(year);
+                        DatabaseReference ref5=ref4.child(mail);
+                        DatabaseReference ref6=ref5.child("latitude");
+                        DatabaseReference ref7=ref5.child("longitude");
+
+                        ref6.push().setValue(latitude);
+                        ref7.push().setValue(longitude);
+
+
+                    }
                 }
                 else {
 
@@ -87,7 +143,7 @@ public class GPSTracker extends Service implements LocationListener {
     };
 
     private void queueRunnable() {
-        mHandler.postDelayed(updateRunnable, 10*1000);
+        mHandler.postDelayed(updateRunnable, 5*1000);
 
     }
 
@@ -111,17 +167,26 @@ public class GPSTracker extends Service implements LocationListener {
 
         super.onCreate();
         //Toast.makeText(getBaseContext(), "oncreate()", Toast.LENGTH_SHORT).show();
+        map = new HashMap<String, String>();
+        map.put("17","1");
+        map.put("16","2");
+        map.put("15","3");
+        map.put("14","4");
+
+
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        ref1 = mFirebaseDatabase.getReference();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+        mail=mUser.getEmail();
+        dept=mail.substring(mail.lastIndexOf("@")+1).substring(0,mail.lastIndexOf(".")-9-mail.lastIndexOf("@"));
+        yearmap=mail.substring(mail.lastIndexOf("@")-5).substring(0,2);
+        //Log.d(yearmap,yearmap);
+       // Toast.makeText(getBaseContext(),map.get("15"),Toast.LENGTH_SHORT).show();
+
         serviceStopped = false;
         mHandler = new Handler();
         Log.d("Oncreate", "Oncreate");
-        /*
-        getLocation();
-        while(canGetLocation!=true)
-        {
-            showSettingsAlert();
-            getLocation();
-        }
-        */
 
         queueRunnable();
 
@@ -254,12 +319,11 @@ public class GPSTracker extends Service implements LocationListener {
         return this.canGetLocation;
     }
 
-    /**
-     * Function to show settings alert dialog
-     * On pressing Settings button will lauch Settings Options
-     */
+
+
 
     public void showSettingsAlert() {
+
         Log.d("SETTINGS1", "SETTINGS1");
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
         Log.d("SETTINGS2", "SETTINGS2");

@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
         try {
             Log.d("perm.","perm.");
             if (ActivityCompat.checkSelfPermission(this, mPermission)
