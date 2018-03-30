@@ -1,10 +1,10 @@
 {
-  "student":
-   	{
-		
-   	},
-  "faculty":
-	{
-		
-	}
+    "Wifi":
+    {
+      "MSV":
+      {
+        "latitude":"12.751377",
+        "longitude":"80.196857"
+      }
+    }
 }

@@ -56,6 +56,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
                         //Error
+                        Toast.makeText(getApplicationContext(),"Cant connect to gmail at the moment", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
@@ -64,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         mgooglebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Toast.makeText(LoginActivity.this, "Sign in with your SSN Mail ID!",Toast.LENGTH_SHORT).show();
+
                 signIn();
             }
         });
@@ -96,6 +97,7 @@ public class LoginActivity extends AppCompatActivity {
                     firebaseAuthWithGoogle(account);
                 } else {
                     // Google Sign In failed, update UI appropriately
+                    Toast.makeText(getBaseContext(),"Google sign in failed",Toast.LENGTH_SHORT).show();
                     // ...
                 }
             }
@@ -160,4 +162,3 @@ public class LoginActivity extends AppCompatActivity {
 
 
 }
-

@@ -19,6 +19,6 @@ public class Main4Activity extends AppCompatActivity {
                 startActivity(m);
                 Main4Activity.this.overridePendingTransition(R.anim.fadein, R.anim.fadeout);
             }
-        }, 3000);
+        },3000);
     }
 }

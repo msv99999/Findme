@@ -1,6 +1,5 @@
 package com.findme.msv.findme;
 
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,13 +10,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -59,23 +64,30 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
-
-
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private static final int HANDLER_DELAY = 1000*5;
 
+    Button btnShowLocation;
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
 
     // GPSTracker class
     GPSTracker gps;
-    private Timer timer;
+
     double latitude;
     double longitude;
 
+    Bundle b;
 
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference ref1;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    String mail;
+
+
+    String name,department,year,key;
 
 
 
@@ -91,14 +103,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
 
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        ref1 = mFirebaseDatabase.getReference();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
 
-
-
-
-
-
-
-
+        b=getIntent().getExtras();
+        if(b!=null)
+        {
+            name=b.getString("name");
+            department=b.getString("dep");
+            year=b.getString("year");
+            key=b.getString("key");
+        }
 
 
         try {
@@ -115,31 +132,116 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
 
+        name=name.replace(".","");
+        DatabaseReference ref2=ref1.child("student");
+        //Toast.makeText(getBaseContext(),department,Toast.LENGTH_SHORT).show();
+        DatabaseReference ref3=ref2.child(department.toUpperCase());
+        final DatabaseReference ref4=ref3.child(year);
+        //Toast.makeText(getBaseContext(),ref4.getKey(),Toast.LENGTH_SHORT).show();
+        ref4.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    //Toast.makeText(getBaseContext(),snapshot.getKey().toString(),Toast.LENGTH_SHORT).show();
+                    //emailid
+                    String text=snapshot.getKey();
+                    if(text.substring(0,text.lastIndexOf("@")-6+1).toLowerCase().equals(name.toLowerCase()))
+                    {
+                        DatabaseReference ref5=ref4.child(text);
+                        DatabaseReference ref6=ref5.child("latitude");
+                        DatabaseReference ref7=ref5.child("longitude");
+                        ref6.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                String l=dataSnapshot.getValue().toString();
+                                Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
+                                latitude=Double.parseDouble(l);
+                                //onMapReady(mMap);
+                            }
 
-                // check if GPS enabled
-                if (gps.canGetLocation()) {
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
-                    latitude = gps.getLatitude();
-                    longitude = gps.getLongitude();
+                            }
+                        });
 
-                    // \n is for new line
-                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                            + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-                } else {
-                    // can't get location
-                    // GPS or Network is not enabled
-                    // Ask user to enable GPS/network in settings
-                    gps.showSettingsAlert();
+                        ref7.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                String l=dataSnapshot.getValue().toString();
+                                longitude=Double.parseDouble(l);
+                                Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
+                                //onMapReady(mMap);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+
+                        /*
+
+
+
+                        //Toast.makeText(getBaseContext(),"success  "+text.substring(0,text.lastIndexOf("@")-6+1),Toast.LENGTH_SHORT).show();
+                        for(DataSnapshot snapshot2:snapshot.getChildren())
+                        {
+                            if(snapshot2.getKey().equals("latitude"))
+                            {
+                                latitude=snapshot2.getValue();
+                            }
+                            else
+                            {
+                                longitude=snapshot2.getValue();
+                            }
+
+                        }
+                        */
+
+                        break;
+                    }
+
+                    else
+                    {
+                        Toast.makeText(getBaseContext(),name.toLowerCase()+"Not found",Toast.LENGTH_SHORT).show();
+                    }
                 }
+            }
 
 
 
 
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
 
 
 
+    /*
+        gps = new GPSTracker(MapsActivity.this);
+        gps.getLocation();
+        // check if GPS enabled
+        if (gps.canGetLocation()) {
+
+            latitude = gps.getLatitude();
+            longitude = gps.getLongitude();
+
+            // \n is for new line
+            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+        } else {
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gps.showSettingsAlert();
+        }
+
+    */
     }
 
 
@@ -157,10 +259,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         googleMap.clear();
+
+
+
+
+
+
+
+
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Chennai"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng loc = new LatLng(latitude, longitude);
+        Toast.makeText(getBaseContext(),latitude + " " + longitude, Toast.LENGTH_SHORT).show();
+        mMap.addMarker(new MarkerOptions().position(loc).title(name));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
+
     }
 
 }
