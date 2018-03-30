@@ -80,15 +80,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
         googleApiClient.connect();
 
-//        mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                .enableAutoManage(this /* FragmentActivity */, new GoogleApiClient.OnConnectionFailedListener() {
-//                    @Override
-//                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-//                        //Error
-//                    }
-//                })
-//                .addApi(Auth.GOOGLE_SIGN_IN_API)
-//                .build();
+        Intent i=new Intent(this,GPSTracker.class);
+        startService(i);
     }
 
     @Override
@@ -204,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                         mAuth.signOut();
                                     }
                                 });
+                        Intent i=new Intent(MainActivity.this, GPSTracker.class);
+                        stopService(i);
                         Intent J =new Intent(MainActivity.this,LoginActivity.class);
                         startActivity(J);
                         break;
@@ -288,6 +283,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                         mAuth.signOut();
                                     }
                                 });
+                        Intent i=new Intent(MainActivity.this, GPSTracker.class);
+                        stopService(i);
                         Intent J =new Intent(MainActivity.this,LoginActivity.class);
                         startActivity(J);
 
