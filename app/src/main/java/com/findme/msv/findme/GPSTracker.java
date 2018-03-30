@@ -34,10 +34,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 
 
@@ -57,12 +62,13 @@ public class GPSTracker extends Service implements LocationListener {
     Location location; // location
     double latitude; // latitude
     double longitude; // longitude
+    String time,date;
 
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 10 meters
 
     // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 5; // 5 minutes
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 10; // 10 sec
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
@@ -76,6 +82,8 @@ public class GPSTracker extends Service implements LocationListener {
     int size = 0;
     String ITEM_KEY = "key";
     ArrayList<HashMap<String, String>> arraylist = new ArrayList<HashMap<String, String>>();
+
+    Calendar calender=Calendar.getInstance();
 
 
 
@@ -94,6 +102,9 @@ public class GPSTracker extends Service implements LocationListener {
 
 
         super.onCreate();
+
+
+
 
         map = new HashMap<String, String>();
         map.put("17","1");
@@ -116,7 +127,7 @@ public class GPSTracker extends Service implements LocationListener {
         mHandler = new Handler();
         Log.d("Oncreate", "Oncreate");
 
-/*
+
         wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi.isWifiEnabled() == false)
         {
@@ -135,7 +146,7 @@ public class GPSTracker extends Service implements LocationListener {
             }
         }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
-*/
+
         queueRunnable();
 
     }
@@ -152,100 +163,154 @@ public class GPSTracker extends Service implements LocationListener {
 
             if (serviceStopped == false)
             {
+                Log.d("Inside:","service stopped");
+                boolean flag=false;
+                wifi.setWifiEnabled(true);
 
-            /*
                 arraylist.clear();
                 wifi.startScan();
 
                 //Toast.makeText(getApplicationContext(), "Scanning...." + size, Toast.LENGTH_SHORT).show();
                 try
                 {
+                    results = wifi.getScanResults();
+                    //Toast.makeText(getApplicationContext(), results.toString(), Toast.LENGTH_LONG).show();
+                    size = results.size();
+                    Log.d("wifi size",""+size);
                     size = size - 1;
                     while (size >= 0)
                     {
+                        Log.d("InsideWiFi loop",""+results.get(size).SSID);
+
                         HashMap<String, String> item = new HashMap<String, String>();
                         item.put(ITEM_KEY, results.get(size).SSID + "  " + results.get(size).capabilities);
 
                         arraylist.add(item);
-                        //Toast.makeText(getApplicationContext(), results.get(size).SSID , Toast.LENGTH_SHORT).show();
+                        String wifiName="";
+                        wifiName=wifiName+results.get(size).SSID;
+
+                        //Toast.makeText(getApplicationContext(), wifiName , Toast.LENGTH_SHORT).show();
+                        if(wifiName.equals("MSV1"))
+                        {
+                            Log.d("wifi","matched");
+                            wifi.setWifiEnabled(false);
+                            flag=true;
+                            mail=mail.replace(".","_");
+                            DatabaseReference ref2=ref1.child("student");
+                            DatabaseReference ref3=ref2.child(dept.toUpperCase());
+
+                            String year=map.get(yearmap);
+                            //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
+                            DatabaseReference ref4=ref3.child(year);
+                            DatabaseReference ref5=ref4.child(mail);
+
+                            Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                            hopperUpdates.put("latitude", "50.000");
+                            ref5.updateChildren(hopperUpdates);
+                            hopperUpdates.put("longitude", "50.000");
+                            ref5.updateChildren(hopperUpdates);
+                            calender = Calendar.getInstance();
+                            date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                            hopperUpdates.put("date",date);
+                            ref5.updateChildren(hopperUpdates);
+                            calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+                            time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                            hopperUpdates.put("time", time);
+                            ref5.updateChildren(hopperUpdates);
+                            break;
+                        }
+
                         size--;
 
                     }
+                    wifi.setWifiEnabled(false);
                 }
                 catch (Exception e)
                 {
 
                 }
 
-            */
 
 
-                //createNotificationIcon();
-                getLocation();
-                if (canGetLocation())
+                if(!flag)
                 {
+                    Log.d("Inside:","GPS");
+                    //createNotificationIcon();
+                    getLocation();
+                    if (canGetLocation())
+                    {
+                        Log.d("Can get","location");
 
-                    //Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                      //      + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                        //      + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
 
-                    //Toast.makeText(getBaseContext(),mail,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getBaseContext(),mail,Toast.LENGTH_SHORT).show();
 
                     /*
                     Map<String, Object> hopperUpdates = new HashMap<String, Object>();
                     hopperUpdates.put(mail,latitude);
                     DatabaseReference ref2=ref1.child(mail);
                     */
-                    //ref2.push().setValue(hopperUpdates);
+                        //ref2.push().setValue(hopperUpdates);
 
-                    if(mail.substring(mail.lastIndexOf('@')).matches("@ssn.edu.in"))
-                    {
-                        //Faculty
-                        mail=mail.replace(".","_");
-                        DatabaseReference ref2=ref1.child("faculty");
+                        if(mail.substring(mail.lastIndexOf('@')).matches("@ssn.edu.in"))
+                        {
+                            //Faculty
+                            mail=mail.replace(".","_");
+                            DatabaseReference ref2=ref1.child("faculty");
+
+                        }
+                        else
+                        {
+                            Log.d("Inside:","student update");
+                            //Student
+                            mail=mail.replace(".","_");
+                            DatabaseReference ref2=ref1.child("student");
+                            DatabaseReference ref3=ref2.child(dept.toUpperCase());
+
+                            String year=map.get(yearmap);
+                            //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
+                            DatabaseReference ref4=ref3.child(year);
+                            DatabaseReference ref5=ref4.child(mail);
+
+                            Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                            hopperUpdates.put("latitude", latitude);
+                            ref5.updateChildren(hopperUpdates);
+                            hopperUpdates.put("longitude", longitude);
+                            ref5.updateChildren(hopperUpdates);
+                            calender = Calendar.getInstance();
+                            date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                            hopperUpdates.put("date",date);
+                            ref5.updateChildren(hopperUpdates);
+                            calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+                            time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                            hopperUpdates.put("time", time);
+                            ref5.updateChildren(hopperUpdates);
+
+
+                        }
+                    }
+                    else {
+
+
+
+                        //Toast.makeText(getBaseContext(),"GPS NA",Toast.LENGTH_SHORT).show();
+                        // can't get location
+                        // GPS or Network is not enabled
+                        // Ask user to enable GPS/network in settings
+                        Log.d("NOGPS", "NOGPS");
+
 
                     }
-                    else
-                    {
-                        //Student
-                        mail=mail.replace(".","_");
-                        DatabaseReference ref2=ref1.child("student");
-                        DatabaseReference ref3=ref2.child(dept.toUpperCase());
-
-                        String year=map.get(yearmap);
-                        //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
-                        DatabaseReference ref4=ref3.child(year);
-                        DatabaseReference ref5=ref4.child(mail);
-                        DatabaseReference ref6=ref5.child("latitude");
-                        DatabaseReference ref7=ref5.child("longitude");
-                        Map<String, Object> hopperUpdates = new HashMap<String, Object>();
-                        hopperUpdates.put("latitude", latitude);
-                        ref5.updateChildren(hopperUpdates);
-                        hopperUpdates.put("longitude", longitude);
-                        ref5.updateChildren(hopperUpdates);
-
-                        //Toast.makeText(getBaseContext(),latitude+"",Toast.LENGTH_SHORT).show();
-                        //Toast.makeText(getBaseContext(),longitude+"",Toast.LENGTH_SHORT).show();
-                    }
                 }
-                else {
 
-
-
-                    //Toast.makeText(getBaseContext(),"GPS NA",Toast.LENGTH_SHORT).show();
-                    // can't get location
-                    // GPS or Network is not enabled
-                    // Ask user to enable GPS/network in settings
-                    Log.d("NOGPS", "NOGPS");
-
-
-                }
             }
             queueRunnable();
         }
     };
 
     private void queueRunnable() {
-        mHandler.postDelayed(updateRunnable, 5*1000);
+        mHandler.postDelayed(updateRunnable, 10*1000);
 
     }
 
@@ -288,6 +353,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     public Location getLocation() {
         try {
+            this.canGetLocation=false;
             locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
 
             // getting GPS status
@@ -306,6 +372,7 @@ public class GPSTracker extends Service implements LocationListener {
 
                 // First get location from Network Provider
                 if (isNetworkEnabled) {
+                    Log.d("Network","enabled");
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
                             MIN_TIME_BW_UPDATES,
@@ -318,12 +385,15 @@ public class GPSTracker extends Service implements LocationListener {
                         if (location != null) {
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
+                            time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                            date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
                         }
                     }
                 }
 
                 // if GPS Enabled get lat/long using GPS Services
                 if (isGPSEnabled) {
+                    Log.d("GPS","Enabled");
                     if (location == null) {
                         locationManager.requestLocationUpdates(
                                 LocationManager.GPS_PROVIDER,
@@ -338,6 +408,8 @@ public class GPSTracker extends Service implements LocationListener {
                             if (location != null) {
                                 latitude = location.getLatitude();
                                 longitude = location.getLongitude();
+                                time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                                date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
                             }
                         }
                     }
@@ -397,7 +469,7 @@ public class GPSTracker extends Service implements LocationListener {
 
 
 
-
+/*
     public void showSettingsAlert() {
 
 
@@ -429,7 +501,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     }
 
-
+*/
 
 
     @Override
