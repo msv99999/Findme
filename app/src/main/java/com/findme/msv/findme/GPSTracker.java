@@ -192,32 +192,55 @@ public class GPSTracker extends Service implements LocationListener {
                         //Toast.makeText(getApplicationContext(), wifiName , Toast.LENGTH_SHORT).show();
                         if(wifiName.equals("MSV1"))
                         {
-                            Log.d("wifi","matched");
-                            wifi.setWifiEnabled(false);
-                            flag=true;
-                            mail=mail.replace(".","_");
-                            DatabaseReference ref2=ref1.child("student");
-                            DatabaseReference ref3=ref2.child(dept.toUpperCase());
 
-                            String year=map.get(yearmap);
-                            //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
-                            DatabaseReference ref4=ref3.child(year);
-                            DatabaseReference ref5=ref4.child(mail);
 
-                            Map<String, Object> hopperUpdates = new HashMap<String, Object>();
-                            hopperUpdates.put("latitude", "50.000");
-                            ref5.updateChildren(hopperUpdates);
-                            hopperUpdates.put("longitude", "50.000");
-                            ref5.updateChildren(hopperUpdates);
-                            calender = Calendar.getInstance();
-                            date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-                            hopperUpdates.put("date",date);
-                            ref5.updateChildren(hopperUpdates);
-                            calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
-                            time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
-                            hopperUpdates.put("time", time);
-                            ref5.updateChildren(hopperUpdates);
-                            break;
+                            if(mail.substring(mail.lastIndexOf('@')).matches("@ssn.edu.in"))
+                            {
+                                //Faculty
+                                mail=mail.replace(".","_");
+                                DatabaseReference ref2=ref1.child("faculty");
+                                Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                                hopperUpdates.put("latitude", latitude);
+                                ref2.updateChildren(hopperUpdates);
+                                hopperUpdates.put("longitude", longitude);
+                                ref2.updateChildren(hopperUpdates);
+                                calender = Calendar.getInstance();
+                                date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                                hopperUpdates.put("date",date);
+                                ref2.updateChildren(hopperUpdates);
+                                calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+                                time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                                hopperUpdates.put("time", time);
+                                ref2.updateChildren(hopperUpdates);
+                            }
+                            else {
+                                Log.d("wifi", "matched");
+                                wifi.setWifiEnabled(false);
+                                flag = true;
+                                mail = mail.replace(".", "_");
+                                DatabaseReference ref2 = ref1.child("student");
+                                DatabaseReference ref3 = ref2.child(dept.toUpperCase());
+
+                                String year = map.get(yearmap);
+                                //Toast.makeText(getBaseContext(),year,Toast.LENGTH_SHORT).show();
+                                DatabaseReference ref4 = ref3.child(year);
+                                DatabaseReference ref5 = ref4.child(mail);
+
+                                Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                                hopperUpdates.put("latitude", "50.000");
+                                ref5.updateChildren(hopperUpdates);
+                                hopperUpdates.put("longitude", "50.000");
+                                ref5.updateChildren(hopperUpdates);
+                                calender = Calendar.getInstance();
+                                date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                                hopperUpdates.put("date", date);
+                                ref5.updateChildren(hopperUpdates);
+                                calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+                                time = calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) + ":" + calender.get(Calendar.SECOND);
+                                hopperUpdates.put("time", time);
+                                ref5.updateChildren(hopperUpdates);
+                                break;
+                            }
                         }
 
                         size--;
@@ -258,7 +281,19 @@ public class GPSTracker extends Service implements LocationListener {
                             //Faculty
                             mail=mail.replace(".","_");
                             DatabaseReference ref2=ref1.child("faculty");
-
+                            Map<String, Object> hopperUpdates = new HashMap<String, Object>();
+                            hopperUpdates.put("latitude", latitude);
+                            ref2.updateChildren(hopperUpdates);
+                            hopperUpdates.put("longitude", longitude);
+                            ref2.updateChildren(hopperUpdates);
+                            calender = Calendar.getInstance();
+                            date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                            hopperUpdates.put("date",date);
+                            ref2.updateChildren(hopperUpdates);
+                            calender.setTimeZone(TimeZone.getTimeZone("Asia/Calcutta"));
+                            time=calender.get(Calendar.HOUR_OF_DAY) + ":" + calender.get(Calendar.MINUTE) +  ":" + calender.get(Calendar.SECOND);
+                            hopperUpdates.put("time", time);
+                            ref2.updateChildren(hopperUpdates);
                         }
                         else
                         {

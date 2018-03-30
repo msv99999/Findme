@@ -1,5 +1,6 @@
 package com.findme.msv.findme;
 
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -87,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String mail;
 
 
-    String name,department,year,key;
+    String name,department,year,key,date,time;
 
 
 
@@ -133,10 +134,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         name=name.replace(".","");
-        DatabaseReference ref2=ref1.child("student");
-        //Toast.makeText(getBaseContext(),department,Toast.LENGTH_SHORT).show();
-        DatabaseReference ref3=ref2.child(department.toUpperCase());
-        final DatabaseReference ref4=ref3.child(year);
+        final DatabaseReference ref2,ref3,ref4;
+        if(key==(""+0)) {
+            ref2 = ref1.child("student");
+            //Toast.makeText(getBaseContext(),department,Toast.LENGTH_SHORT).show();
+            ref3 = ref2.child(department.toUpperCase());
+            ref4 = ref3.child(year);
+        }
+        else
+        {
+            ref4 = ref1.child("faculty");
+        }
         //Toast.makeText(getBaseContext(),ref4.getKey(),Toast.LENGTH_SHORT).show();
         ref4.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -148,15 +156,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if(text.substring(0,text.lastIndexOf("@")-6+1).toLowerCase().equals(name.toLowerCase()))
                     {
                         DatabaseReference ref5=ref4.child(text);
-                        DatabaseReference ref6=ref5.child("latitude");
-                        DatabaseReference ref7=ref5.child("longitude");
-                        ref6.addValueEventListener(new ValueEventListener() {
+                        final DatabaseReference ref6=ref5.child("latitude");
+                        final DatabaseReference ref7=ref5.child("longitude");
+                        final DatabaseReference ref8=ref5.child("date");
+                        DatabaseReference ref9=ref5.child("time");
+
+                        ref9.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                String l=dataSnapshot.getValue().toString();
-                                Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
-                                latitude=Double.parseDouble(l);
-                                //onMapReady(mMap);
+
+
+                                time=dataSnapshot.getValue().toString();
+
+                                ref6.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        String l=dataSnapshot.getValue().toString();
+                                        //Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
+                                        latitude=Double.parseDouble(l);
+                                        onMapReady(mMap);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                                ref7.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        String l=dataSnapshot.getValue().toString();
+                                        longitude=Double.parseDouble(l);
+                                        //Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
+                                        onMapReady(mMap);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                                ref8.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        date=dataSnapshot.getValue().toString();
+                                        onMapReady(mMap);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                                onMapReady(mMap);
                             }
 
                             @Override
@@ -165,47 +220,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
 
-                        ref7.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                String l=dataSnapshot.getValue().toString();
-                                longitude=Double.parseDouble(l);
-                                Toast.makeText(getBaseContext(),l,Toast.LENGTH_SHORT).show();
-                                //onMapReady(mMap);
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-
-
-                        /*
 
 
 
-                        //Toast.makeText(getBaseContext(),"success  "+text.substring(0,text.lastIndexOf("@")-6+1),Toast.LENGTH_SHORT).show();
-                        for(DataSnapshot snapshot2:snapshot.getChildren())
-                        {
-                            if(snapshot2.getKey().equals("latitude"))
-                            {
-                                latitude=snapshot2.getValue();
-                            }
-                            else
-                            {
-                                longitude=snapshot2.getValue();
-                            }
-
-                        }
-                        */
 
                         break;
                     }
 
                     else
                     {
-                        Toast.makeText(getBaseContext(),name.toLowerCase()+"Not found",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(),text.substring(0,text.lastIndexOf("@")-6).toLowerCase()+"  Not found",Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -222,26 +246,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-    /*
-        gps = new GPSTracker(MapsActivity.this);
-        gps.getLocation();
-        // check if GPS enabled
-        if (gps.canGetLocation()) {
 
-            latitude = gps.getLatitude();
-            longitude = gps.getLongitude();
-
-            // \n is for new line
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-        } else {
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
-        }
-
-    */
     }
 
 
@@ -257,21 +262,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
         googleMap.clear();
-
-
-
-
-
-
+        mMap = googleMap;
 
 
         // Add a marker in Sydney and move the camera
         LatLng loc = new LatLng(latitude, longitude);
-        Toast.makeText(getBaseContext(),latitude + " " + longitude, Toast.LENGTH_SHORT).show();
-        mMap.addMarker(new MarkerOptions().position(loc).title(name));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
+        //Toast.makeText(getBaseContext(),latitude + " " + longitude, Toast.LENGTH_SHORT).show();
+        mMap.addMarker(new MarkerOptions().position(loc).title(name+" Found at:  "+"Date:"+date +"  Time:"+time));
+        float zoomLevel = 16.0f; //This goes up to 21
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, zoomLevel));
+
 
     }
 
